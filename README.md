@@ -6,6 +6,41 @@ Fast documentation scraper and HTML-to-Markdown converter built for AI agents. D
 [![CI](https://github.com/Alex28042/docscraper-ai/actions/workflows/release.yml/badge.svg)](https://github.com/Alex28042/docscraper-ai/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+## Claude Code Skill
+
+Add docscraper-ai as a Claude Code skill to generate knowledge graphs from any documentation:
+
+```bash
+# Create the skill command
+mkdir -p ~/.claude/commands
+cat > ~/.claude/commands/docscraper.md << 'EOF'
+# /docscraper
+
+You are a documentation scraper. Use `npx docscraper-ai` to discover and scrape documentation.
+
+## Usage
+- `/docscraper discover <topic>` — Find official docs for a topic
+- `/docscraper scrape <url>` — Scrape a URL to Markdown
+- `/docscraper <topic>` — Discover + scrape the top result
+
+## Behavior
+
+1. If input is a topic, run: `npx docscraper-ai discover "<topic>"`
+2. Select the most authoritative URL from results
+3. Run: `npx docscraper-ai scrape <url> --output /tmp/docscraper/<topic>`
+4. Read the generated `.md` files and present a summary
+
+$ARGUMENTS
+EOF
+```
+
+Now use it in Claude Code:
+
+```
+/docscraper hono framework
+/docscraper scrape https://docs.stripe.com/api
+```
+
 ## Features
 
 - **Discover** official documentation sources via DuckDuckGo search
