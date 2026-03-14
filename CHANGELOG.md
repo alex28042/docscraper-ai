@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/Alex28042/docscraper-ai/compare/v1.0.0...v1.0.1) (2026-03-14)
+
+
+### Bug Fixes
+
+* add lockfile sync to pre-commit hook ([189b138](https://github.com/Alex28042/docscraper-ai/commit/189b1380ad2319419e901a91a604ccf8695a3656))
+
 # 1.0.0 (2026-03-14)
 
 
