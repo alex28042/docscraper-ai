@@ -1,0 +1,50 @@
+{
+  "name": "docscraper-ai",
+  "version": "1.0.0",
+  "description": "Fast documentation scraper and HTML-to-Markdown converter built for AI agents. Discover, crawl, and extract docs into clean structured Markdown.",
+  "keywords": [
+    "docscraper",
+    "web-scraper",
+    "crawler",
+    "html-to-markdown",
+    "documentation",
+    "ai",
+    "agent",
+    "turndown",
+    "cheerio"
+  ],
+  "license": "MIT",
+  "author": "Alex28042",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alex28042/docscraper-ai"
+  },
+  "homepage": "https://github.com/Alex28042/docscraper-ai#readme",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "docscraper-ai": "dist/cli.js"
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "turndown": "^7.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/turndown": "^5.0.5",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0"
+  }
+}
