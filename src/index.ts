@@ -85,10 +85,18 @@ export type {
   SearchResult,
   IContentWriter,
   ILogger,
+  ISitemapParser,
+  IRobotsParser,
+  ICodeExtractor,
+  CodeSnippet,
+  ICrawlProgress,
+  CrawlProgressEvent,
 } from './interfaces';
-export { NullLogger, StderrLogger } from './interfaces';
+export { NullLogger, StderrLogger, NullProgress } from './interfaces';
 
 // HTTP clients
+export { RetryHttpClient } from './http/retry-http-client';
+export type { RetryOptions } from './http/retry-http-client';
 export { FetchHttpClient } from './http/fetch-http-client';
 export { AxiosHttpClient } from './http/axios-http-client';
 export { UndiciHttpClient } from './http/undici-http-client';
@@ -97,10 +105,17 @@ export { UndiciHttpClient } from './http/undici-http-client';
 export { Crawler as WebScraper } from './crawling/crawler';
 export { Crawler } from './crawling/crawler';
 export { Discoverer } from './discovery/discoverer';
+export { SitemapParser } from './discovery/sitemap-parser';
+export { RobotsParser } from './discovery/robots-parser';
 
 // Pure functions
 export { buildTree } from './generation/tree-builder';
 export { generateSkillTree } from './generation/generator';
+export { exportToSingleFile, exportToSingleFileAndWrite } from './generation/single-file-exporter';
+export type { SingleFileExportOptions } from './generation/single-file-exporter';
+
+// Parsing implementations
+export { CheerioCodeExtractor } from './parsing/code-extractor';
 
 // Factories
 export { createDefaultCrawler, createDefaultDiscoverer } from './factories';
