@@ -7,6 +7,8 @@ import type { IHtmlConverter } from '../interfaces/html-converter';
 import type { ILinkExtractor } from '../interfaces/link-extractor';
 import type { ILogger } from '../interfaces/logger';
 import { NullLogger } from '../interfaces/logger';
+import type { ICrawlProgress } from '../interfaces/progress';
+import { NullProgress } from '../interfaces/progress';
 import { filterLinks } from '../parsing/link-extractor';
 
 export class Crawler {
@@ -17,6 +19,7 @@ export class Crawler {
     private readonly converter: IHtmlConverter,
     private readonly linkExtractor: ILinkExtractor,
     private readonly logger: ILogger = new NullLogger(),
+    private readonly progress: ICrawlProgress = new NullProgress(),
   ) {}
 
   async scrapePage(url: string): Promise<PageContent> {
@@ -82,12 +85,26 @@ export class Crawler {
         if (result.error) {
           errors.push({ url: toUrl(result.url), error: result.error });
           this.logger.error(`[error] ${result.url}: ${result.error}`);
+          this.progress.onPageComplete({
+            currentPage: pages.length + errors.length,
+            totalPages: maxPages,
+            url: result.url,
+            status: 'error',
+            error: result.error,
+          });
           continue;
         }
 
         try {
           const page = this.processHtml(result.url, result.html!);
           pages.push(page);
+
+          this.progress.onPageComplete({
+            currentPage: pages.length + errors.length,
+            totalPages: maxPages,
+            url: result.url,
+            status: 'success',
+          });
 
           if (depth < maxDepth) {
             const childLinks = filterLinks(page.links, includePatterns, excludePatterns);
@@ -103,6 +120,13 @@ export class Crawler {
           const message = err instanceof Error ? err.message : String(err);
           errors.push({ url: toUrl(result.url), error: message });
           this.logger.error(`[error] ${result.url}: ${message}`);
+          this.progress.onPageComplete({
+            currentPage: pages.length + errors.length,
+            totalPages: maxPages,
+            url: result.url,
+            status: 'error',
+            error: message,
+          });
         }
       }
     }
@@ -115,6 +139,8 @@ export class Crawler {
       startedAt,
       completedAt,
     };
+
+    this.progress.onCrawlComplete(stats);
 
     return { startUrl: toUrl(startUrl), pages, errors, stats };
   }
