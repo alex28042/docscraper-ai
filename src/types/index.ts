@@ -1,10 +1,4 @@
 export type {
-  ScraperConfig,
-  CrawlOptions,
-  PageContent,
-  CrawlResult,
-  CrawlStats,
-  TreeNode,
   Url,
   Slug,
   Milliseconds,
@@ -20,7 +14,7 @@ export type {
   MetaDescription,
   FilePath,
   DirectoryPath,
-} from './types/index';
+} from './branded';
 
 export {
   toUrl,
@@ -38,4 +32,13 @@ export {
   toMetaDescription,
   toFilePath,
   toDirectoryPath,
-} from './types/index';
+} from './branded';
+
+export type {
+  ScraperConfig,
+  CrawlOptions,
+  PageContent,
+  CrawlResult,
+  CrawlStats,
+  TreeNode,
+} from './domain';

@@ -1,4 +1,5 @@
 import type { PageContent, TreeNode } from '../types';
+import { toSlug } from '../types';
 
 export function pathToSlug(url: string, basePath: string): string {
   const parsed = new URL(url);
@@ -33,12 +34,12 @@ export function buildTree(pages: PageContent[], startUrl: string): TreeNode[] {
   for (const page of pages) {
     const slug = pathToSlug(page.url, basePath);
     const node: TreeNode = {
-      slug,
+      slug: toSlug(slug),
       title: page.title,
       url: page.url,
       markdown: page.markdown,
       children: [],
-      parentSlug: '',
+      parentSlug: toSlug(''),
     };
     nodeMap.set(slug, node);
     nodes.push(node);
@@ -54,7 +55,7 @@ export function buildTree(pages: PageContent[], startUrl: string): TreeNode[] {
       const parentSlug = parts.slice(0, i).join('--');
       const parent = nodeMap.get(parentSlug);
       if (parent) {
-        node.parentSlug = parentSlug;
+        node.parentSlug = toSlug(parentSlug);
         parent.children.push(node);
         parentFound = true;
         break;

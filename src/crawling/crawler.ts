@@ -1,4 +1,5 @@
-import type { CrawlOptions, PageContent, CrawlResult, CrawlStats } from '../types';
+import type { CrawlOptions, PageContent, CrawlResult, CrawlStats, Url } from '../types';
+import { toUrl, toPageTitle, toMetaDescription, toMarkdownContent, toMilliseconds } from '../types';
 import type { IHttpClient } from '../interfaces/http-client';
 import type { IConcurrencyLimiter } from '../interfaces/concurrency-limiter';
 import type { IHtmlParser } from '../interfaces/html-parser';
@@ -29,11 +30,11 @@ export class Crawler {
     const links = this.linkExtractor.extract(html, url);
 
     return {
-      url,
-      title: parsed.title,
-      description: parsed.description,
-      markdown,
-      links,
+      url: toUrl(url),
+      title: toPageTitle(parsed.title),
+      description: toMetaDescription(parsed.description),
+      markdown: toMarkdownContent(markdown),
+      links: links.map(toUrl),
       fetchedAt: new Date(),
     };
   }
@@ -46,7 +47,7 @@ export class Crawler {
 
     const visited = new Set<string>();
     const pages: PageContent[] = [];
-    const errors: { url: string; error: string }[] = [];
+    const errors: { url: Url; error: string }[] = [];
     const startedAt = new Date();
 
     const queue: [string, number][] = [[startUrl, 0]];
@@ -79,7 +80,7 @@ export class Crawler {
         const [, depth] = batch[i];
 
         if (result.error) {
-          errors.push({ url: result.url, error: result.error });
+          errors.push({ url: toUrl(result.url), error: result.error });
           this.logger.error(`[error] ${result.url}: ${result.error}`);
           continue;
         }
@@ -100,7 +101,7 @@ export class Crawler {
           }
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          errors.push({ url: result.url, error: message });
+          errors.push({ url: toUrl(result.url), error: message });
           this.logger.error(`[error] ${result.url}: ${message}`);
         }
       }
@@ -110,11 +111,11 @@ export class Crawler {
     const stats: CrawlStats = {
       totalPages: pages.length,
       totalErrors: errors.length,
-      durationMs: completedAt.getTime() - startedAt.getTime(),
+      durationMs: toMilliseconds(completedAt.getTime() - startedAt.getTime()),
       startedAt,
       completedAt,
     };
 
-    return { startUrl, pages, errors, stats };
+    return { startUrl: toUrl(startUrl), pages, errors, stats };
   }
 }

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createDefaultCrawler } from '../../factories';
 import { StderrLogger } from '../../interfaces/logger';
+import { toRequestsPerSecond, toMilliseconds, toConcurrencyLevel } from '../../types';
 
 export async function executeScrape(args: string[]): Promise<void> {
   const urls: string[] = [];
@@ -28,7 +29,11 @@ export async function executeScrape(args: string[]): Promise<void> {
 
   const logger = new StderrLogger();
   const crawler = await createDefaultCrawler(
-    { rateLimit: 3, timeoutMs: 15_000, concurrency },
+    {
+      rateLimit: toRequestsPerSecond(3),
+      timeoutMs: toMilliseconds(15_000),
+      concurrency: toConcurrencyLevel(concurrency),
+    },
     logger,
   );
 

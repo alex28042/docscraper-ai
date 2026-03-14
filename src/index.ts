@@ -1,5 +1,43 @@
-// Domain types
+// Branded types
+export type {
+  Url,
+  Slug,
+  Milliseconds,
+  RequestsPerSecond,
+  ConcurrencyLevel,
+  CrawlDepth,
+  MaxPages,
+  RegexPattern,
+  HtmlContent,
+  MarkdownContent,
+  UserAgent,
+  PageTitle,
+  MetaDescription,
+  FilePath,
+  DirectoryPath,
+} from './types';
+
+// Brand constructors
 export {
+  toUrl,
+  toSlug,
+  toMilliseconds,
+  toRequestsPerSecond,
+  toConcurrencyLevel,
+  toCrawlDepth,
+  toMaxPages,
+  toRegexPattern,
+  toHtmlContent,
+  toMarkdownContent,
+  toUserAgent,
+  toPageTitle,
+  toMetaDescription,
+  toFilePath,
+  toDirectoryPath,
+} from './types';
+
+// Domain types
+export type {
   ScraperConfig,
   CrawlOptions,
   PageContent,
@@ -7,6 +45,32 @@ export {
   CrawlStats,
   TreeNode,
 } from './types';
+
+// Schemas (Zod runtime validation)
+export {
+  UrlSchema,
+  SlugSchema,
+  MillisecondsSchema,
+  RequestsPerSecondSchema,
+  ConcurrencyLevelSchema,
+  CrawlDepthSchema,
+  MaxPagesSchema,
+  RegexPatternSchema,
+  HtmlContentSchema,
+  MarkdownContentSchema,
+  UserAgentSchema,
+  PageTitleSchema,
+  MetaDescriptionSchema,
+  FilePathSchema,
+  DirectoryPathSchema,
+  ScraperConfigSchema,
+  CrawlOptionsSchema,
+  PageContentSchema,
+  CrawlStatsSchema,
+  CrawlErrorSchema,
+  CrawlResultSchema,
+  TreeNodeSchema,
+} from './schemas';
 
 // Interfaces
 export type {
