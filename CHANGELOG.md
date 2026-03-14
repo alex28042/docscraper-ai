@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/Alex28042/docscraper-ai/compare/v1.0.1...v1.0.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* add .claude project settings and CLAUDE.md rules ([daad953](https://github.com/Alex28042/docscraper-ai/commit/daad953ab9a5f90a48d7d3978090e067102bf1f3))
+
 ## [1.0.1](https://github.com/Alex28042/docscraper-ai/compare/v1.0.0...v1.0.1) (2026-03-14)
 
 
