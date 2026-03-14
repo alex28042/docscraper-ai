@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/Alex28042/docscraper-ai/compare/v1.0.2...v1.0.3) (2026-03-14)
+
+
+### Bug Fixes
+
+* enforce conventional commits with commitlint and husky commit-msg hook ([e07b195](https://github.com/Alex28042/docscraper-ai/commit/e07b195637bae8f74b25c13f1b01967e052404a6))
+
 ## [1.0.2](https://github.com/Alex28042/docscraper-ai/compare/v1.0.1...v1.0.2) (2026-03-14)
 
 
