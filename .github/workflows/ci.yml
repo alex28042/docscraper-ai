@@ -1,8 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -29,7 +27,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Lint + Format + Build + Test (parallel)
+      - name: Lint + Format + Build + Test
         run: |
           pnpm run lint &
           PID_LINT=$!
