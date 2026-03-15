@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/Alex28042/docscraper-ai/compare/v1.2.4...v1.2.5) (2026-03-15)
+
+
+### Performance Improvements
+
+* remove source maps from published package ([4d29245](https://github.com/Alex28042/docscraper-ai/commit/4d2924569e14d4f3811fcac72ee302550d1be49f))
+
 ## [1.2.4](https://github.com/Alex28042/docscraper-ai/compare/v1.2.3...v1.2.4) (2026-03-15)
 
 
