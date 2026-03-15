@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/Alex28042/docscraper-ai/compare/v1.1.0...v1.2.0) (2026-03-15)
+
+
+### Features
+
+* add HTTP response cache with InMemoryCache, FsCache, and CachedHttpClient decorator ([5c045de](https://github.com/Alex28042/docscraper-ai/commit/5c045de6f83a0474785da39186ffa7c19df53b2f))
+
 # 1.0.0 (2026-03-15)
 
 
