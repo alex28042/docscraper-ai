@@ -13,3 +13,4 @@ export type { IRobotsParser } from './robots-parser';
 export type { ICrawlProgress, CrawlProgressEvent } from './progress';
 export { NullProgress } from './progress';
 export type { ICodeExtractor, CodeSnippet } from './code-extractor';
+export type { ICache, CacheEntry } from './cache';
