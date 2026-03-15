@@ -3,53 +3,112 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  workflow_call: # Allow release.yml to call this workflow
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: 22
+  PNPM_VERSION: 10
+
 jobs:
-  lint:
-    name: Lint & Format
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile --prefer-offline
+
+      - uses: actions/cache/save@v4
+        with:
+          path: node_modules
+          key: modules-${{ hashFiles('pnpm-lock.yaml') }}
+
+  lint:
+    name: Lint
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: node_modules
+          key: modules-${{ hashFiles('pnpm-lock.yaml') }}
 
       - run: pnpm run lint & pnpm run format:check & wait
 
   build:
     name: Build
+    needs: setup
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
+          node-version: ${{ env.NODE_VERSION }}
 
-      - run: pnpm install --frozen-lockfile --prefer-offline
+      - uses: actions/cache/restore@v4
+        with:
+          path: node_modules
+          key: modules-${{ hashFiles('pnpm-lock.yaml') }}
+
       - run: pnpm run build
 
   test-unit:
     name: Unit Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: node_modules
+          key: modules-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - run: pnpm vitest run tests/unit/
+
+  test-integration:
+    name: Integration Tests
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
@@ -57,38 +116,20 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
+          node-version: ${{ env.NODE_VERSION }}
 
-      - run: pnpm install --frozen-lockfile --prefer-offline
-      - run: pnpm vitest run tests/unit/
-
-  test-integration:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
+      - uses: actions/cache/restore@v4
         with:
-          version: 10
+          path: node_modules
+          key: modules-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+      - run: pnpm vitest run tests/integration/ --exclude='tests/integration/*.real.test.ts'
 
-      - run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Integration tests (mocked)
-        run: pnpm vitest run tests/integration/ --exclude='tests/integration/*.real.test.ts'
-
-      - name: Integration tests (real)
+      - name: Real integration tests
         env:
           NODE_TLS_REJECT_UNAUTHORIZED: '0'
         run: pnpm vitest run tests/integration/*.real.test.ts

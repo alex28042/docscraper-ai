@@ -1,44 +1,42 @@
 name: Security Audit
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
   schedule:
-    - cron: '0 8 * * 1' # Every Monday at 8am UTC
+    - cron: '0 8 * * 1'
 
 permissions:
   contents: read
   security-events: write
 
+env:
+  NODE_VERSION: 22
+  PNPM_VERSION: 10
+
 jobs:
   audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: pnpm audit
-        run: pnpm audit --prod
-
-      - name: Check outdated dependencies
-        run: pnpm outdated || true
+      - run: pnpm audit --prod
+      - run: pnpm outdated || true
 
   codeql:
-    name: CodeQL Analysis
+    name: CodeQL
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
