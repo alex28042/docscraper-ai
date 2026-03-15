@@ -4,6 +4,7 @@ import { StderrLogger } from '../../src/interfaces/logger';
 import { toRequestsPerSecond, toConcurrencyLevel, toMilliseconds } from '../../src/types';
 
 beforeAll(() => {
+  process.emitWarning = () => {};
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 });
 

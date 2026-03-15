@@ -9,6 +9,7 @@ import { InMemoryCache } from '../../src/http/in-memory-cache';
 import type { IHttpClient } from '../../src/interfaces/http-client';
 
 beforeAll(() => {
+  process.emitWarning = () => {};
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 });
 
