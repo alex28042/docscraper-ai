@@ -10,6 +10,7 @@ import type { RetryOptions } from '../http/retry-http-client';
 import { CheerioHtmlParser } from '../parsing/parser';
 import { TurndownConverter } from '../parsing/converter';
 import { CheerioLinkExtractor } from '../parsing/link-extractor';
+import { CheerioMetadataExtractor } from '../parsing/metadata-extractor';
 import { Crawler } from '../crawling/crawler';
 import { HttpClientFactory } from './http-client-factory';
 import type { HttpClientType } from './http-client-factory';
@@ -53,6 +54,7 @@ export class CrawlerFactory {
     const parser = new CheerioHtmlParser();
     const converter = new TurndownConverter();
     const linkExtractor = new CheerioLinkExtractor();
+    const metadataExtractor = new CheerioMetadataExtractor();
 
     return new Crawler(
       httpClient,
@@ -61,6 +63,8 @@ export class CrawlerFactory {
       converter,
       linkExtractor,
       this.logger,
+      undefined,
+      metadataExtractor,
     );
   }
 }

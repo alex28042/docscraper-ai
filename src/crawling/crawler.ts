@@ -1,4 +1,4 @@
-import type { CrawlOptions, PageContent, CrawlResult, CrawlStats, Url } from '../types';
+import type { CrawlOptions, PageContent, CrawlResult, CrawlStats, CrawlState, Url } from '../types';
 import { toUrl, toPageTitle, toMetaDescription, toMarkdownContent, toMilliseconds } from '../types';
 import type { IHttpClient } from '../interfaces/http-client';
 import type { IConcurrencyLimiter } from '../interfaces/concurrency-limiter';
@@ -9,7 +9,10 @@ import type { ILogger } from '../interfaces/logger';
 import { NullLogger } from '../interfaces/logger';
 import type { ICrawlProgress } from '../interfaces/progress';
 import { NullProgress } from '../interfaces/progress';
+import type { IMetadataExtractor } from '../interfaces/metadata-extractor';
 import { filterLinks } from '../parsing/link-extractor';
+import { detectLanguageFromHtml } from '../parsing/language-detector';
+import { computeSimhash, areSimilar } from '../parsing/deduplication';
 
 export class Crawler {
   constructor(
@@ -20,6 +23,7 @@ export class Crawler {
     private readonly linkExtractor: ILinkExtractor,
     private readonly logger: ILogger = new NullLogger(),
     private readonly progress: ICrawlProgress = new NullProgress(),
+    private readonly metadataExtractor?: IMetadataExtractor,
   ) {}
 
   async scrapePage(url: string): Promise<PageContent> {
@@ -32,7 +36,7 @@ export class Crawler {
     const markdown = this.converter.convert(parsed.mainHtml);
     const links = this.linkExtractor.extract(html, url);
 
-    return {
+    const page: PageContent = {
       url: toUrl(url),
       title: toPageTitle(parsed.title),
       description: toMetaDescription(parsed.description),
@@ -40,6 +44,19 @@ export class Crawler {
       links: links.map(toUrl),
       fetchedAt: new Date(),
     };
+
+    // Feature 1: Metadata extraction
+    if (this.metadataExtractor) {
+      page.metadata = this.metadataExtractor.extract(html, url);
+    }
+
+    // Feature 8: Language detection
+    const language = detectLanguageFromHtml(html);
+    if (language) {
+      page.language = language;
+    }
+
+    return page;
   }
 
   async crawl(startUrl: string, options: CrawlOptions = {}): Promise<CrawlResult> {
@@ -48,13 +65,46 @@ export class Crawler {
     const includePatterns = options.includePatterns ?? [];
     const excludePatterns = options.excludePatterns ?? [];
 
-    const visited = new Set<string>();
-    const pages: PageContent[] = [];
-    const errors: { url: Url; error: string }[] = [];
-    const startedAt = new Date();
+    let visited: Set<string>;
+    let pages: PageContent[];
+    let errors: { url: Url; error: string }[];
+    let startedAt: Date;
+    let queue: [string, number][];
+    let duplicatesSkipped = 0;
 
-    const queue: [string, number][] = [[startUrl, 0]];
-    visited.add(startUrl);
+    // Feature 4: Resume from state
+    const stateStore = options.stateStore;
+    const existingState = stateStore ? await stateStore.load() : undefined;
+
+    if (existingState) {
+      visited = new Set(existingState.visited);
+      pages = existingState.pages;
+      errors = existingState.errors;
+      startedAt = existingState.startedAt;
+      queue = existingState.queue;
+      this.logger.info(
+        `Resuming crawl from saved state: ${pages.length} pages, ${queue.length} queued`,
+      );
+    } else {
+      visited = new Set<string>();
+      pages = [];
+      errors = [];
+      startedAt = new Date();
+      queue = [[startUrl, 0]];
+      visited.add(startUrl);
+    }
+
+    // Feature 2: Deduplication
+    const simhashes = new Map<string, bigint>();
+    const dedup = options.deduplication === true;
+    const dedupThreshold = options.deduplicationThreshold ?? 3;
+
+    // Pre-compute simhashes for already-crawled pages (resume case)
+    if (dedup && pages.length > 0) {
+      for (const page of pages) {
+        simhashes.set(page.url, computeSimhash(page.markdown));
+      }
+    }
 
     while (queue.length > 0 && pages.length < maxPages) {
       const batchSize = Math.min(queue.length, maxPages - pages.length);
@@ -96,7 +146,37 @@ export class Crawler {
         }
 
         try {
+          // Feature 8: Language filtering
+          if (options.languages && options.languages.length > 0) {
+            const lang = detectLanguageFromHtml(result.html!);
+            if (lang && !options.languages.some((l) => lang.startsWith(l))) {
+              this.logger.info(
+                `[skip] ${result.url}: language ${lang} not in ${options.languages.join(', ')}`,
+              );
+              continue;
+            }
+          }
+
           const page = this.processHtml(result.url, result.html!);
+
+          // Feature 2: Deduplication check
+          if (dedup) {
+            const hash = computeSimhash(page.markdown);
+            let isDuplicate = false;
+            for (const [, existingHash] of simhashes) {
+              if (areSimilar(hash, existingHash, dedupThreshold)) {
+                isDuplicate = true;
+                break;
+              }
+            }
+            if (isDuplicate) {
+              duplicatesSkipped++;
+              this.logger.info(`[dedup] ${result.url}: skipped as duplicate`);
+              continue;
+            }
+            simhashes.set(result.url, hash);
+          }
+
           pages.push(page);
 
           this.progress.onPageComplete({
@@ -129,6 +209,24 @@ export class Crawler {
           });
         }
       }
+
+      // Feature 4: Save state after each batch
+      if (stateStore) {
+        const state: CrawlState = {
+          visited: Array.from(visited),
+          queue,
+          pages,
+          errors,
+          startedAt,
+          startUrl,
+        };
+        await stateStore.save(state);
+      }
+    }
+
+    // Feature 4: Clear state on successful completion
+    if (stateStore) {
+      await stateStore.clear();
     }
 
     const completedAt = new Date();
@@ -138,6 +236,7 @@ export class Crawler {
       durationMs: toMilliseconds(completedAt.getTime() - startedAt.getTime()),
       startedAt,
       completedAt,
+      duplicatesSkipped,
     };
 
     this.progress.onCrawlComplete(stats);

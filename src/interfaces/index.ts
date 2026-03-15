@@ -14,3 +14,4 @@ export type { ICrawlProgress, CrawlProgressEvent } from './progress';
 export { NullProgress } from './progress';
 export type { ICodeExtractor, CodeSnippet } from './code-extractor';
 export type { ICache } from './cache';
+export type { IMetadataExtractor } from './metadata-extractor';

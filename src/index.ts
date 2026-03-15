@@ -41,9 +41,22 @@ export type {
   ScraperConfig,
   CrawlOptions,
   PageContent,
+  PageMetadata,
   CrawlResult,
   CrawlStats,
   TreeNode,
+  HeadingNode,
+  StructuredPage,
+  StructuredExport,
+  CrawlState,
+  ICrawlStateStore,
+  HttpMethod,
+  ApiParam,
+  ApiEndpoint,
+  LinkStatus,
+  LinkReport,
+  PageDiff,
+  CrawlDiff,
 } from './types';
 
 // Schemas (Zod runtime validation)
@@ -65,11 +78,23 @@ export {
   DirectoryPathSchema,
   ScraperConfigSchema,
   CrawlOptionsSchema,
+  PageMetadataSchema,
   PageContentSchema,
   CrawlStatsSchema,
   CrawlErrorSchema,
   CrawlResultSchema,
   TreeNodeSchema,
+  HeadingNodeSchema,
+  StructuredPageSchema,
+  StructuredExportSchema,
+  CrawlStateSchema,
+  HttpMethodSchema,
+  ApiParamSchema,
+  ApiEndpointSchema,
+  LinkStatusSchema,
+  LinkReportSchema,
+  PageDiffSchema,
+  CrawlDiffSchema,
 } from './schemas';
 
 // Interfaces
@@ -92,6 +117,7 @@ export type {
   ICrawlProgress,
   CrawlProgressEvent,
   ICache,
+  IMetadataExtractor,
 } from './interfaces';
 export { NullLogger, StderrLogger, NullProgress } from './interfaces';
 
@@ -106,6 +132,8 @@ export { InMemoryCache } from './http/in-memory-cache';
 export type { InMemoryCacheOptions } from './http/in-memory-cache';
 export { FsCache } from './http/fs-cache';
 export type { FsCacheOptions } from './http/fs-cache';
+export { PlaywrightHttpClient } from './http/playwright-http-client';
+export type { PlaywrightOptions } from './http/playwright-http-client';
 
 // Core classes (public API — preserving WebScraper alias)
 export { Crawler as WebScraper } from './crawling/crawler';
@@ -120,8 +148,54 @@ export { generateSkillTree } from './generation/generator';
 export { exportToSingleFile, exportToSingleFileAndWrite } from './generation/single-file-exporter';
 export type { SingleFileExportOptions } from './generation/single-file-exporter';
 
+// Feature 1: Metadata extraction
+export { CheerioMetadataExtractor } from './parsing/metadata-extractor';
+
+// Feature 2: Content deduplication
+export { tokenize, computeSimhash, hammingDistance, areSimilar } from './parsing/deduplication';
+
+// Feature 3: Structured JSON export
+export {
+  extractHeadings,
+  toStructuredPage,
+  exportToStructuredJson,
+} from './generation/structured-export';
+
+// Feature 4: Resumable crawls
+export { FsCrawlStateStore } from './crawling/fs-crawl-state';
+
+// Feature 5: API metadata detection
+export { extractApiEndpoints } from './parsing/api-extractor';
+
+// Feature 6: Config file support
+export { findConfigFile, loadConfig, mergeConfig } from './cli/config';
+export type { CliConfig } from './cli/config';
+export { CliConfigSchema } from './schemas/cli-config';
+
+// Feature 7: Link validation
+export { validateLinks } from './parsing/link-validator';
+export type { LinkValidatorOptions } from './parsing/link-validator';
+
+// Feature 8: Language detection
+export { detectLanguageFromHtml } from './parsing/language-detector';
+
+// Feature 9: Diff mode
+export { diffCrawls, exportCrawlResult, importCrawlResult } from './generation/diff';
+
 // Parsing implementations
 export { CheerioCodeExtractor } from './parsing/code-extractor';
+
+// Custom errors
+export {
+  DocScraperError,
+  HttpFetchError,
+  HtmlParseError,
+  MissingDependencyError,
+  ConfigValidationError,
+  CrawlStateError,
+  ConfigFileError,
+  DiffInputError,
+} from './errors';
 
 // Factories
 export { CrawlerFactory, DiscovererFactory } from './factories';
