@@ -41,6 +41,34 @@
 
 * add branded types, Zod schemas, and migrate to pnpm ([cc31883](https://github.com/Alex28042/docscraper-ai/commit/cc3188306f2fb6b3e0bfcd7b6f3b4be930a66c45))
 * add code snippet extraction from HTML documentation ([6454f0c](https://github.com/Alex28042/docscraper-ai/commit/6454f0c7425f05df8327e23cf50e5ab0b1d8bf76))
+* add HTTP response cache with InMemoryCache, FsCache, and CachedHttpClient decorator ([5c045de](https://github.com/Alex28042/docscraper-ai/commit/5c045de6f83a0474785da39186ffa7c19df53b2f))
+* add progress events with onPageComplete and onCrawlComplete callbacks ([1611197](https://github.com/Alex28042/docscraper-ai/commit/1611197842d1edb6162076829f397f169b3a2aab))
+* add RetryHttpClient with exponential backoff and jitter ([0089dfa](https://github.com/Alex28042/docscraper-ai/commit/0089dfae6dc7d3a1e46364bed962e8232832dedf))
+* add robots.txt parser with crawl rules and sitemap discovery ([6604e76](https://github.com/Alex28042/docscraper-ai/commit/6604e763552685481d2c4a6b3bf536903834174f))
+* add semantic-release for automatic versioning and NPM publishing ([ae50f66](https://github.com/Alex28042/docscraper-ai/commit/ae50f6669d3afb7fbe68e79b1a29a09ddadaf965))
+* add single-file markdown export for entire crawl results ([fcb2d74](https://github.com/Alex28042/docscraper-ai/commit/fcb2d748e3e46d55f4934e9ede858b8710a08183))
+* add sitemap parser for URL discovery via sitemap.xml ([d26a7de](https://github.com/Alex28042/docscraper-ai/commit/d26a7de032255ad1eabb2b1ee28459086ea8e346))
+
+
+### Performance Improvements
+
+* optimize CI/CD for speed ([9955646](https://github.com/Alex28042/docscraper-ai/commit/9955646720ad78b2d46e6ddc3be6e33017678321))
+
+# 1.0.0 (2026-03-15)
+
+
+### Bug Fixes
+
+* add .claude project settings and CLAUDE.md rules ([fb75c91](https://github.com/Alex28042/docscraper-ai/commit/fb75c9168e3319fc59a320ceb99b653948a6d6e6))
+* add lockfile sync to pre-commit hook ([73c9a01](https://github.com/Alex28042/docscraper-ai/commit/73c9a018d727e10e93ed6abdac96eb8240d49ec9))
+* enforce conventional commits with commitlint and husky commit-msg hook ([4864cc3](https://github.com/Alex28042/docscraper-ai/commit/4864cc389cb4b3f73c8a738152f14c03b16411ec))
+* sync pnpm-lock.yaml with pinned dependency versions ([1e40fbe](https://github.com/Alex28042/docscraper-ai/commit/1e40fbe5ba967747d0c22e19bce30cda5fce770d))
+
+
+### Features
+
+* add branded types, Zod schemas, and migrate to pnpm ([cc31883](https://github.com/Alex28042/docscraper-ai/commit/cc3188306f2fb6b3e0bfcd7b6f3b4be930a66c45))
+* add code snippet extraction from HTML documentation ([6454f0c](https://github.com/Alex28042/docscraper-ai/commit/6454f0c7425f05df8327e23cf50e5ab0b1d8bf76))
 * add progress events with onPageComplete and onCrawlComplete callbacks ([1611197](https://github.com/Alex28042/docscraper-ai/commit/1611197842d1edb6162076829f397f169b3a2aab))
 * add RetryHttpClient with exponential backoff and jitter ([0089dfa](https://github.com/Alex28042/docscraper-ai/commit/0089dfae6dc7d3a1e46364bed962e8232832dedf))
 * add robots.txt parser with crawl rules and sitemap discovery ([6604e76](https://github.com/Alex28042/docscraper-ai/commit/6604e763552685481d2c4a6b3bf536903834174f))
