@@ -1,3 +1,22 @@
+# [1.3.0](https://github.com/Alex28042/docscraper-ai/compare/v1.2.5...v1.3.0) (2026-03-15)
+
+
+### Features
+
+* add API endpoint detection from HTML documentation ([d0ec0f8](https://github.com/Alex28042/docscraper-ai/commit/d0ec0f8f5e5addde9a836cbd043a70553baf404f))
+* add config file support with .docscraperrc.json ([4ff72d4](https://github.com/Alex28042/docscraper-ai/commit/4ff72d45eba9be1812ff5c9fcfa6b9fcb026b777))
+* add content deduplication via 64-bit simhash fingerprinting ([e3e4e80](https://github.com/Alex28042/docscraper-ai/commit/e3e4e80f3cef019ce28136015d1cee2626f09ab3))
+* add custom exception hierarchy for cleaner error handling ([6b9786c](https://github.com/Alex28042/docscraper-ai/commit/6b9786c35c2e1e1c9d3ea0166a7eeb590d0670cb))
+* add diff mode to compare two crawl results ([b36dad5](https://github.com/Alex28042/docscraper-ai/commit/b36dad52826266976677a4658804e246c9958549))
+* add domain types and schemas for all new features ([6e57976](https://github.com/Alex28042/docscraper-ai/commit/6e57976af60e6e4d8248cb4f2a09b98a4e909baf))
+* add language detection from HTML document attributes ([e3a4728](https://github.com/Alex28042/docscraper-ai/commit/e3a47280b3f9e734a47a5270c4a135590d787031))
+* add link validation for internal and external URLs ([8edfa56](https://github.com/Alex28042/docscraper-ai/commit/8edfa561bed70a4ec17460a1e809c1c0213c919b))
+* add metadata extraction from HTML meta tags and OG tags ([ef37e7f](https://github.com/Alex28042/docscraper-ai/commit/ef37e7fbfa35ac953b8a18caed15df5279f4da35))
+* add Playwright HTTP client for JS-rendered pages ([a71a471](https://github.com/Alex28042/docscraper-ai/commit/a71a4716c123ade45e8809c31abc20854ae8600b))
+* add resumable crawls with file-system state persistence ([1b3a93a](https://github.com/Alex28042/docscraper-ai/commit/1b3a93a05a4756fe53b1c6866b6718dc70b95166))
+* add structured JSON export with heading tree and code blocks ([e067990](https://github.com/Alex28042/docscraper-ai/commit/e067990884e99ed0d10e4abccd026d0a697702de))
+* wire all features into crawler, factories, CLI, and public API ([17621e7](https://github.com/Alex28042/docscraper-ai/commit/17621e738ec3d44734bd00f6921ef8ab9bfac323))
+
 ## [1.2.5](https://github.com/Alex28042/docscraper-ai/compare/v1.2.4...v1.2.5) (2026-03-15)
 
 
