@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/Alex28042/docscraper-ai/compare/v1.2.0...v1.2.1) (2026-03-15)
+
+
+### Bug Fixes
+
+* update dependencies and add security audit CI ([27be26f](https://github.com/Alex28042/docscraper-ai/commit/27be26fc45ac8f1f734db72a85e985e13e082548))
+
 # [1.2.0](https://github.com/Alex28042/docscraper-ai/compare/v1.1.0...v1.2.0) (2026-03-15)
 
 
