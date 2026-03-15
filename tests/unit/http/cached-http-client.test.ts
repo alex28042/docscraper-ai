@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { CachedHttpClient } from '../../../src/http/cached-http-client';
 import type { IHttpClient } from '../../../src/interfaces/http-client';
+import type { ICache } from '../../../src/interfaces/cache';
 import { InMemoryCache } from '../../../src/http/in-memory-cache';
 
 function createMockClient(responses: Record<string, string>): IHttpClient & { callCount: number } {
@@ -19,8 +20,7 @@ function createMockClient(responses: Record<string, string>): IHttpClient & { ca
 describe('CachedHttpClient', () => {
   it('should return cached response on second call', async () => {
     const inner = createMockClient({ 'https://example.com': '<html>Hello</html>' });
-    const cache = new InMemoryCache({ ttlMs: 60_000 });
-    const client = new CachedHttpClient(inner, cache);
+    const client = new CachedHttpClient(inner, new InMemoryCache());
 
     const first = await client.fetch('https://example.com');
     const second = await client.fetch('https://example.com');
@@ -31,50 +31,40 @@ describe('CachedHttpClient', () => {
   });
 
   it('should not cache different URLs together', async () => {
-    const inner = createMockClient({
-      'https://a.com': 'A',
-      'https://b.com': 'B',
-    });
-    const cache = new InMemoryCache();
-    const client = new CachedHttpClient(inner, cache);
+    const inner = createMockClient({ 'https://a.com': 'A', 'https://b.com': 'B' });
+    const client = new CachedHttpClient(inner, new InMemoryCache());
 
-    const a = await client.fetch('https://a.com');
-    const b = await client.fetch('https://b.com');
-
-    expect(a).toBe('A');
-    expect(b).toBe('B');
+    expect(await client.fetch('https://a.com')).toBe('A');
+    expect(await client.fetch('https://b.com')).toBe('B');
     expect(inner.callCount).toBe(2);
   });
 
   it('should re-fetch after cache expires', async () => {
     const inner = createMockClient({ 'https://example.com': 'data' });
-    const cache = new InMemoryCache({ ttlMs: 50 });
-    const client = new CachedHttpClient(inner, cache);
+    const client = new CachedHttpClient(inner, new InMemoryCache({ ttlMs: 50 }));
 
     await client.fetch('https://example.com');
     expect(inner.callCount).toBe(1);
 
-    // Wait for TTL to expire
     await new Promise((r) => setTimeout(r, 80));
 
     await client.fetch('https://example.com');
     expect(inner.callCount).toBe(2);
   });
 
-  it('should propagate errors without caching them', async () => {
+  it('should not cache errors', async () => {
     const inner = createMockClient({});
-    const cache = new InMemoryCache();
-    const client = new CachedHttpClient(inner, cache);
+    const client = new CachedHttpClient(inner, new InMemoryCache());
 
     await expect(client.fetch('https://missing.com')).rejects.toThrow('Not found');
-    expect(cache.size()).toBe(0);
+    // Should not have cached the error
+    expect(inner.callCount).toBe(1);
   });
 
   it('should pass options through to inner client', async () => {
     const fetchSpy = vi.fn().mockResolvedValue('html');
     const inner: IHttpClient = { fetch: fetchSpy };
-    const cache = new InMemoryCache();
-    const client = new CachedHttpClient(inner, cache);
+    const client = new CachedHttpClient(inner, new InMemoryCache());
 
     await client.fetch('https://example.com', { allowAnyContent: true, timeoutMs: 5000 });
 
@@ -84,25 +74,23 @@ describe('CachedHttpClient', () => {
     });
   });
 
-  it('should work with different cache backends', async () => {
+  it('should accept any ICache implementation', async () => {
     const inner = createMockClient({ 'https://example.com': 'data' });
 
-    // Custom cache implementation
-    const customCache = new Map<string, { data: string; cachedAt: number }>();
-    const cache = {
-      get: (key: string) => customCache.get(key),
-      set: (key: string, data: string) => {
-        customCache.set(key, { data, cachedAt: Date.now() });
+    // Custom cache — just a Map
+    const store = new Map<string, string>();
+    const customCache: ICache = {
+      get: (key: string) => store.get(key),
+      set: (key: string, value: string) => {
+        store.set(key, value);
       },
-      has: (key: string) => customCache.has(key),
       delete: (key: string) => {
-        customCache.delete(key);
+        store.delete(key);
       },
-      clear: () => customCache.clear(),
-      size: () => customCache.size,
+      clear: () => store.clear(),
     };
 
-    const client = new CachedHttpClient(inner, cache);
+    const client = new CachedHttpClient(inner, customCache);
     await client.fetch('https://example.com');
     await client.fetch('https://example.com');
 

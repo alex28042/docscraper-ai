@@ -92,7 +92,6 @@ export type {
   ICrawlProgress,
   CrawlProgressEvent,
   ICache,
-  CacheEntry,
 } from './interfaces';
 export { NullLogger, StderrLogger, NullProgress } from './interfaces';
 

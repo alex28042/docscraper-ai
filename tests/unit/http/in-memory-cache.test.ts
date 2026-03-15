@@ -10,32 +10,25 @@ describe('InMemoryCache', () => {
 
   it('should store and retrieve values', () => {
     cache.set('key', 'value');
-    const entry = cache.get('key');
-    expect(entry).toBeDefined();
-    expect(entry!.data).toBe('value');
+    expect(cache.get('key')).toBe('value');
   });
 
   it('should return undefined for missing keys', () => {
     expect(cache.get('missing')).toBeUndefined();
   });
 
-  it('should report has() correctly', () => {
-    expect(cache.has('key')).toBe(false);
-    cache.set('key', 'value');
-    expect(cache.has('key')).toBe(true);
-  });
-
   it('should delete entries', () => {
     cache.set('key', 'value');
     cache.delete('key');
-    expect(cache.has('key')).toBe(false);
+    expect(cache.get('key')).toBeUndefined();
   });
 
   it('should clear all entries', () => {
     cache.set('a', '1');
     cache.set('b', '2');
     cache.clear();
-    expect(cache.size()).toBe(0);
+    expect(cache.get('a')).toBeUndefined();
+    expect(cache.get('b')).toBeUndefined();
   });
 
   it('should expire entries after TTL', () => {
@@ -46,7 +39,6 @@ describe('InMemoryCache', () => {
     vi.advanceTimersByTime(100);
 
     expect(shortCache.get('key')).toBeUndefined();
-    expect(shortCache.has('key')).toBe(false);
 
     vi.useRealTimers();
   });
@@ -58,7 +50,7 @@ describe('InMemoryCache', () => {
     vi.useFakeTimers();
     vi.advanceTimersByTime(999_999);
 
-    expect(noExpiry.get('key')).toBeDefined();
+    expect(noExpiry.get('key')).toBe('value');
 
     vi.useRealTimers();
   });
@@ -69,10 +61,9 @@ describe('InMemoryCache', () => {
     small.set('b', '2');
     small.set('c', '3');
 
-    expect(small.has('a')).toBe(false);
-    expect(small.has('b')).toBe(true);
-    expect(small.has('c')).toBe(true);
-    expect(small.size()).toBe(2);
+    expect(small.get('a')).toBeUndefined();
+    expect(small.get('b')).toBe('2');
+    expect(small.get('c')).toBe('3');
   });
 
   it('should not evict when updating existing key', () => {
@@ -81,18 +72,7 @@ describe('InMemoryCache', () => {
     small.set('b', '2');
     small.set('a', 'updated');
 
-    expect(small.has('a')).toBe(true);
-    expect(small.has('b')).toBe(true);
-    expect(small.get('a')!.data).toBe('updated');
-  });
-
-  it('should track size correctly', () => {
-    expect(cache.size()).toBe(0);
-    cache.set('a', '1');
-    expect(cache.size()).toBe(1);
-    cache.set('b', '2');
-    expect(cache.size()).toBe(2);
-    cache.delete('a');
-    expect(cache.size()).toBe(1);
+    expect(small.get('a')).toBe('updated');
+    expect(small.get('b')).toBe('2');
   });
 });

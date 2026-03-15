@@ -3,9 +3,9 @@ import type { ICache } from '../interfaces/cache';
 
 /**
  * Decorator that caches HTTP responses.
- * Wraps any IHttpClient — chain with RetryHttpClient for resilient cached requests.
+ * Accepts any ICache implementation via constructor DI.
  *
- * Example: CachedHttpClient → RetryHttpClient → FetchHttpClient
+ * Chain: CachedHttpClient → RetryHttpClient → FetchHttpClient
  */
 export class CachedHttpClient implements IHttpClient {
   constructor(
@@ -17,13 +17,13 @@ export class CachedHttpClient implements IHttpClient {
     url: string,
     options?: { allowAnyContent?: boolean; timeoutMs?: number },
   ): Promise<string> {
-    const entry = this.cache.get(url);
-    if (entry) {
-      return entry.data;
+    const cached = await this.cache.get(url);
+    if (cached !== undefined) {
+      return cached;
     }
 
     const data = await this.inner.fetch(url, options);
-    this.cache.set(url, data);
+    await this.cache.set(url, data);
     return data;
   }
 }
