@@ -1,6 +1,6 @@
 {
   "name": "docscraper-ai",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Fast documentation scraper and HTML-to-Markdown converter built for AI agents. Discover, crawl, and extract docs into clean structured Markdown.",
   "keywords": [
     "docscraper",
