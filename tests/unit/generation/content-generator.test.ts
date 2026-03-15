@@ -25,6 +25,7 @@ describe('generateIndex', () => {
         durationMs: 100,
         startedAt: new Date(),
         completedAt: new Date(),
+        duplicatesSkipped: 0,
       },
     };
     const roots = [makeNode('api', 'API')];
@@ -63,6 +64,7 @@ describe('generateIndex', () => {
         durationMs: 100,
         startedAt: new Date(),
         completedAt: new Date(),
+        duplicatesSkipped: 0,
       },
     };
     const output = generateIndex([parent], result, 'Docs');

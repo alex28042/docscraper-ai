@@ -34,6 +34,28 @@ export interface CrawlOptions {
   includePatterns?: RegexPattern[];
   /** URL patterns to exclude (regex strings) */
   excludePatterns?: RegexPattern[];
+  /** Enable content deduplication via simhash (default: false) */
+  deduplication?: boolean;
+  /** Hamming distance threshold for deduplication (default: 3) */
+  deduplicationThreshold?: number;
+  /** Only crawl pages matching these language codes */
+  languages?: string[];
+  /** State store for resumable crawls */
+  stateStore?: ICrawlStateStore;
+}
+
+// Feature 1: Metadata Extraction
+export interface PageMetadata {
+  lastModified?: string;
+  author?: string;
+  canonicalUrl?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  language?: string;
+  version?: string;
+  deprecated: boolean;
+  deprecationMessage?: string;
 }
 
 export interface PageContent {
@@ -49,6 +71,10 @@ export interface PageContent {
   links: Url[];
   /** When the page was fetched */
   fetchedAt: Date;
+  /** Extracted page metadata */
+  metadata?: PageMetadata;
+  /** Detected language code */
+  language?: string;
 }
 
 export interface CrawlResult {
@@ -68,6 +94,8 @@ export interface CrawlStats {
   durationMs: Milliseconds;
   startedAt: Date;
   completedAt: Date;
+  /** Number of duplicate pages skipped */
+  duplicatesSkipped: number;
 }
 
 export interface TreeNode {
@@ -83,4 +111,97 @@ export interface TreeNode {
   children: TreeNode[];
   /** Parent slug (empty for root-level) */
   parentSlug: Slug;
+}
+
+// Feature 3: Structured JSON Export
+export interface HeadingNode {
+  level: number;
+  text: string;
+  children: HeadingNode[];
+}
+
+export interface StructuredPage {
+  url: string;
+  title: string;
+  description: string;
+  headings: HeadingNode[];
+  codeBlocks: string[];
+  metadata?: PageMetadata;
+  markdown: string;
+}
+
+export interface StructuredExport {
+  startUrl: string;
+  pages: StructuredPage[];
+  stats: CrawlStats;
+  exportedAt: Date;
+}
+
+// Feature 4: Resumable Crawls
+export interface CrawlState {
+  visited: string[];
+  queue: [string, number][];
+  pages: PageContent[];
+  errors: { url: Url; error: string }[];
+  startedAt: Date;
+  startUrl: string;
+}
+
+export interface ICrawlStateStore {
+  load(): Promise<CrawlState | undefined>;
+  save(state: CrawlState): Promise<void>;
+  clear(): Promise<void>;
+}
+
+// Feature 5: API Metadata Detection
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+export interface ApiParam {
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+}
+
+export interface ApiEndpoint {
+  method: HttpMethod;
+  path: string;
+  params: ApiParam[];
+  returnType?: string;
+  description?: string;
+  codeExample?: string;
+}
+
+// Feature 7: Link Validation
+export interface LinkStatus {
+  url: string;
+  statusCode?: number;
+  isExternal: boolean;
+  referencedFrom: string[];
+  isValid: boolean;
+  error?: string;
+}
+
+export interface LinkReport {
+  total: number;
+  valid: number;
+  broken: number;
+  links: LinkStatus[];
+}
+
+// Feature 9: Diff Mode
+export interface PageDiff {
+  url: string;
+  changeType: 'added' | 'removed' | 'modified' | 'unchanged';
+  previousTitle?: string;
+  currentTitle?: string;
+  contentChanged: boolean;
+}
+
+export interface CrawlDiff {
+  added: PageDiff[];
+  removed: PageDiff[];
+  modified: PageDiff[];
+  unchanged: PageDiff[];
+  summary: { added: number; removed: number; modified: number; unchanged: number };
 }

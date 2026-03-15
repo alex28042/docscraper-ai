@@ -54,6 +54,7 @@ describe('Generator integration', () => {
       durationMs: 500,
       startedAt: new Date(),
       completedAt: new Date(),
+      duplicatesSkipped: 0,
     },
   };
 

@@ -26,6 +26,7 @@ function makeCrawlResult(pageCount: number): CrawlResult {
       durationMs: 1500,
       startedAt: new Date('2025-01-15T10:00:00Z'),
       completedAt: new Date('2025-01-15T10:00:01.500Z'),
+      duplicatesSkipped: 0,
     },
   } as CrawlResult;
 }
