@@ -124,5 +124,6 @@ export type { SingleFileExportOptions } from './generation/single-file-exporter'
 export { CheerioCodeExtractor } from './parsing/code-extractor';
 
 // Factories
+export { CrawlerFactory, DiscovererFactory } from './factories';
 export { createDefaultCrawler, createDefaultDiscoverer } from './factories';
 export type { HttpClientType, CreateCrawlerOptions } from './factories';
