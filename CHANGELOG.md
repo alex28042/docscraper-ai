@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/Alex28042/docscraper-ai/compare/v1.2.3...v1.2.4) (2026-03-15)
+
+
+### Performance Improvements
+
+* optimize CI pipeline with cached setup and parallel jobs ([f0b2b56](https://github.com/Alex28042/docscraper-ai/commit/f0b2b568f4f299866791605311b02bf8473eb68a))
+
 ## [1.2.3](https://github.com/Alex28042/docscraper-ai/compare/v1.2.2...v1.2.3) (2026-03-15)
 
 ## [1.2.2](https://github.com/Alex28042/docscraper-ai/compare/v1.2.1...v1.2.2) (2026-03-15)
