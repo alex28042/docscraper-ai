@@ -67,7 +67,6 @@ export class UndiciHttpClient implements IHttpClient {
         accept: 'text/html,application/xhtml+xml',
         ...this.headers,
       },
-      maxRedirections: 10,
       headersTimeout: timeoutMs,
       bodyTimeout: timeoutMs,
     });
