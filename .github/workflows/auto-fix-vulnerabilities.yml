@@ -1,0 +1,173 @@
+name: Auto Fix Vulnerabilities
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # Daily at 8:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: 22
+  PNPM_VERSION: 10
+
+jobs:
+  fix-vulnerabilities:
+    name: Detect & Fix Vulnerabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      # ── Audit (before) ──────────────────────────────────────────────
+      - name: Run security audit
+        id: audit_before
+        run: |
+          set +e
+          pnpm audit --json --prod --audit-level moderate > audit-before.json 2>&1
+          AUDIT_EXIT=$?
+          set -e
+
+          if [ "$AUDIT_EXIT" -eq 0 ]; then
+            echo "has_vulnerabilities=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No vulnerabilities found — nothing to fix."
+          else
+            VULN_COUNT=$(node -e "
+              const r = require('./audit-before.json');
+              const meta = r.metadata?.vulnerabilities || {};
+              const total = (meta.moderate || 0) + (meta.high || 0) + (meta.critical || 0);
+              console.log(total);
+            " 2>/dev/null || echo "0")
+            echo "has_vulnerabilities=true" >> "$GITHUB_OUTPUT"
+            echo "vuln_count_before=$VULN_COUNT" >> "$GITHUB_OUTPUT"
+            echo "::warning::Found $VULN_COUNT moderate+ vulnerabilities."
+          fi
+
+      # ── Fix ─────────────────────────────────────────────────────────
+      - name: Attempt automatic fix
+        if: steps.audit_before.outputs.has_vulnerabilities == 'true'
+        run: |
+          pnpm audit --fix || true
+          pnpm install --no-frozen-lockfile
+
+      # ── Audit (after) ───────────────────────────────────────────────
+      - name: Re-audit after fix
+        if: steps.audit_before.outputs.has_vulnerabilities == 'true'
+        id: audit_after
+        run: |
+          set +e
+          pnpm audit --json --prod --audit-level moderate > audit-after.json 2>&1
+          AUDIT_EXIT=$?
+          set -e
+
+          if [ "$AUDIT_EXIT" -eq 0 ]; then
+            echo "vuln_count_after=0" >> "$GITHUB_OUTPUT"
+          else
+            VULN_COUNT=$(node -e "
+              const r = require('./audit-after.json');
+              const meta = r.metadata?.vulnerabilities || {};
+              const total = (meta.moderate || 0) + (meta.high || 0) + (meta.critical || 0);
+              console.log(total);
+            " 2>/dev/null || echo "0")
+            echo "vuln_count_after=$VULN_COUNT" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Detect changes ──────────────────────────────────────────────
+      - name: Check for changes
+        if: steps.audit_before.outputs.has_vulnerabilities == 'true'
+        id: changes
+        run: |
+          if git diff --quiet package.json pnpm-lock.yaml; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No fixable vulnerabilities — no changes made."
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            CHANGED=$(git diff --name-only package.json pnpm-lock.yaml)
+            echo "Changed files:"
+            echo "$CHANGED"
+          fi
+
+      # ── Validate ────────────────────────────────────────────────────
+      - name: Lint
+        if: steps.changes.outputs.has_changes == 'true'
+        run: pnpm run lint
+
+      - name: Build
+        if: steps.changes.outputs.has_changes == 'true'
+        run: pnpm run build
+
+      - name: Unit tests
+        if: steps.changes.outputs.has_changes == 'true'
+        run: pnpm vitest run tests/unit/
+
+      - name: Integration tests
+        if: steps.changes.outputs.has_changes == 'true'
+        run: pnpm vitest run tests/integration/ --exclude='tests/integration/*.real.test.ts'
+
+      # ── Cleanup temp files ────────────────────────────────────────────
+      - name: Remove temporary audit files
+        if: steps.changes.outputs.has_changes == 'true'
+        run: rm -f audit-before.json audit-after.json
+
+      # ── Generate PR body ────────────────────────────────────────────
+      - name: Generate PR summary
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          BEFORE=${{ steps.audit_before.outputs.vuln_count_before }}
+          AFTER=${{ steps.audit_after.outputs.vuln_count_after }}
+          FIXED=$((BEFORE - AFTER))
+          DIFF=$(git diff package.json)
+
+          cat > pr-body.md <<EOF
+          ## Security Patch — Automated
+
+          **Vulnerabilities before:** ${BEFORE}
+          **Vulnerabilities after:** ${AFTER}
+          **Fixed:** ${FIXED}
+
+          ### Changes to \`package.json\`
+
+          \`\`\`diff
+          ${DIFF}
+          \`\`\`
+
+          ### Validation
+
+          - [x] Lint passed
+          - [x] Build passed
+          - [x] Unit tests passed
+          - [x] Integration tests passed
+
+          ---
+          *This PR was created automatically by the [Auto Fix Vulnerabilities](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/workflows/auto-fix-vulnerabilities.yml) workflow.*
+          EOF
+
+      # ── Create PR ───────────────────────────────────────────────────
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'fix(deps): auto-fix security vulnerabilities'
+          branch: fix/security-patches
+          delete-branch: true
+          title: 'fix(deps): auto-fix security vulnerabilities'
+          body-path: pr-body.md
+          labels: security,automated
+          add-paths: |
+            package.json
+            pnpm-lock.yaml
