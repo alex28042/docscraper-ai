@@ -1,6 +1,8 @@
 name: Auto Fix Vulnerabilities
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '0 8 * * *' # Daily at 8:00 UTC
   workflow_dispatch:
